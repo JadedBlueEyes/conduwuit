@@ -131,13 +131,14 @@ async fn create_join_event(
 		));
 	};
 
-	if content
+	let should_sign_join_event = content
 		.join_authorized_via_users_server
 		.is_some_and(|user| services.globals.user_is_local(&user))
 		&& super::user_can_perform_restricted_join(services, &sender, room_id, &room_version_id)
 			.await
-			.unwrap_or_default()
-	{
+			.unwrap_or_default();
+
+	if should_sign_join_event {
 		services
 			.server_keys
 			.hash_and_sign_event(&mut value, &room_version_id)
@@ -214,8 +215,12 @@ async fn create_join_event(
 	Ok(create_join_event::v1::RoomState {
 		auth_chain,
 		state,
-		// Event field is required if the room version supports restricted join rules.
-		event: to_raw_value(&CanonicalJsonValue::Object(value)).ok(),
+		// Event field is required if the room is using restricted join rules and we sign the event
+		event: if should_sign_join_event {
+			to_raw_value(&CanonicalJsonValue::Object(value)).ok()
+		} else {
+			None
+		},
 	})
 }
 
