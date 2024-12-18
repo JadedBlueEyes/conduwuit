@@ -2,10 +2,9 @@ mod data;
 
 use std::{collections::BTreeMap, sync::Arc};
 
-use conduwuit::{debug, err, result::LogErr, warn, PduCount, PduId, RawPduId, Result};
+use conduwuit::{debug, err, warn, PduCount, PduId, RawPduId, Result};
 use futures::{try_join, Stream, TryFutureExt};
 use ruma::{
-	api::appservice::event::push_events::v1::EphemeralData,
 	events::{
 		receipt::{ReceiptEvent, ReceiptEventContent, Receipts},
 		AnySyncEphemeralRoomEvent, SyncEphemeralRoomEvent,
@@ -57,17 +56,6 @@ impl Service {
 			.flush_room(room_id)
 			.await
 			.expect("room flush failed");
-		// update appservices
-		let edu = EphemeralData::Receipt(event);
-		_ = self
-			.services
-			.sending
-			.send_edu_appservice_room(
-				room_id,
-				serde_json::to_vec(&edu).expect("Serialized EphemeralData::Receipt"),
-			)
-			.await
-			.log_err();
 	}
 
 	/// Gets the latest private read receipt from the user in the room
