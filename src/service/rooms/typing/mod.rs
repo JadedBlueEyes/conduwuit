@@ -146,34 +146,32 @@ impl Service {
 			}
 		};
 
-		if removable.is_empty() {
-			return Ok(());
-		}
+		if !removable.is_empty() {
+			let typing = &mut self.typing.write().await;
+			let room = typing.entry(room_id.to_owned()).or_default();
+			for user in &removable {
+				debug_info!("typing timeout {user:?} in {room_id:?}");
+				room.remove(user);
+			}
 
-		let typing = &mut self.typing.write().await;
-		let room = typing.entry(room_id.to_owned()).or_default();
-		for user in &removable {
-			debug_info!("typing timeout {user:?} in {room_id:?}");
-			room.remove(user);
-		}
+			// update clients
+			self.last_typing_update
+				.write()
+				.await
+				.insert(room_id.to_owned(), self.services.globals.next_count()?);
 
-		// update clients
-		self.last_typing_update
-			.write()
-			.await
-			.insert(room_id.to_owned(), self.services.globals.next_count()?);
+			if self.typing_update_sender.send(room_id.to_owned()).is_err() {
+				trace!("receiver found what it was looking for and is no longer interested");
+			}
 
-		if self.typing_update_sender.send(room_id.to_owned()).is_err() {
-			trace!("receiver found what it was looking for and is no longer interested");
-		}
+			// update appservices
+			self.appservice_send(room_id).await?;
 
-		// update appservices
-		self.appservice_send(room_id).await?;
-
-		// update federation
-		for user in &removable {
-			if self.services.globals.user_is_local(user) {
-				self.federation_send(room_id, user, false).await?;
+			// update federation
+			for user in &removable {
+				if self.services.globals.user_is_local(user) {
+					self.federation_send(room_id, user, false).await?;
+				}
 			}
 		}
 
