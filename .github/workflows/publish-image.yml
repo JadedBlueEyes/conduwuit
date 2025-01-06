@@ -147,6 +147,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6
         with:
+          context: .
           file: "Containerfile"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
@@ -161,6 +162,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           build-args: TARGET_CPU=x86-64-v3
+          context: .
           file: "Containerfile"
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta-x86-64-v3.outputs.tags }}
