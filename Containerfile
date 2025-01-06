@@ -37,7 +37,7 @@ RUN mkdir /out
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git/db \
     --mount=type=cache,target=/app/target \
-    . /etc/environment && echo $RUSTFLAGS && \
+    . /etc/environment && \
     cargo build --locked --release && \
     cp ./target/release/conduwuit /out/app
 
