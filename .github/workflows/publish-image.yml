@@ -135,6 +135,8 @@ jobs:
       # It manually injects the mounts into Docker.
       # We use 
       - uses: Swatinem/rust-cache@v2
+        with:
+          prefix-key: v0-rust-${{matrix.target}}
         id: rust-cache
 
       - name: Inject cache into Docker
