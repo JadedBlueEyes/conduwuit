@@ -34,7 +34,7 @@ jobs:
       matrix:
         target:
           - base
-          - x86-64-v3
+          - haswell
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
