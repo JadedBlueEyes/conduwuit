@@ -257,14 +257,10 @@ jobs:
           ANNOTATIONS_LIST=($DOCKER_METADATA_OUTPUT_ANNOTATIONS)
           TAGS_LIST=($DOCKER_METADATA_OUTPUT_TAGS)
           for REPO in "${IMAGES_LIST[@]}"; do
-              echo docker buildx imagetools create \
-                $(printf -- " --tag %q" "${TAGS_LIST[@]}") \
-                $(printf -- " --annotation %q" "${ANNOTATIONS_LIST[@]}") \
-                $(printf "$REPO@sha256:%s " *)
               docker buildx imagetools create \
-                $(printf -- " --tag %q" "${TAGS_LIST[@]}") \
-                $(printf -- " --annotation %q" "${ANNOTATIONS_LIST[@]}") \
-                $(printf "$REPO@sha256:%s " *)
+                $(for tag in "${TAGS_LIST[@]}"; do echo "--tag"; echo "$tag"; done) \
+                $(for annotation in "${ANNOTATIONS_LIST[@]}"; do echo "--annotation"; echo "$annotation"; done) \
+                $(for reference in *; do printf "$REPO@sha256:%s" $reference; done)
           done
 
       - name: Inspect image
