@@ -245,7 +245,7 @@ jobs:
           images: ${{needs.define-variables.outputs.images}}
           # default labels & annotations: https://github.com/docker/metadata-action/blob/master/src/meta.ts#L509
         env:
-          DOCKER_METADATA_ANNOTATIONS_LEVELS: index,manifest         
+          DOCKER_METADATA_ANNOTATIONS_LEVELS: index         
 
       - name: Create manifest list and push
         working-directory: /tmp/digests
@@ -255,13 +255,14 @@ jobs:
           IFS=$'\n'
           IMAGES_LIST=($IMAGES)
           ANNOTATIONS_LIST=($DOCKER_METADATA_OUTPUT_ANNOTATIONS)
+          TAGS_LIST=($DOCKER_METADATA_OUTPUT_TAGS)
           for REPO in "${IMAGES_LIST[@]}"; do
               echo docker buildx imagetools create \
-                $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+                $(printf -- " --tag %q" "${TAGS_LIST[@]}") \
                 $(printf -- " --annotation %q" "${ANNOTATIONS_LIST[@]}") \
                 $(printf "$REPO@sha256:%s " *)
               docker buildx imagetools create \
-                $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
+                $(printf -- " --tag %q" "${TAGS_LIST[@]}") \
                 $(printf -- " --annotation %q" "${ANNOTATIONS_LIST[@]}") \
                 $(printf "$REPO@sha256:%s " *)
           done
