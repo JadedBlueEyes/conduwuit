@@ -252,11 +252,13 @@ jobs:
         env:
           IMAGES: ${{needs.define-variables.outputs.images}}
         run: |
+          IFS=$'\n'
           IMAGES_LIST=($IMAGES)
+          ANNOTATIONS_LIST=($DOCKER_METADATA_OUTPUT_ANNOTATIONS)
           for REPO in "${IMAGES_LIST[@]}"; do
               docker buildx imagetools create \
                 $(jq -cr '.tags | map("-t " + .) | join(" ")' <<< "$DOCKER_METADATA_OUTPUT_JSON") \
-                $(printf -- " --annotation %q" "${DOCKER_METADATA_OUTPUT_ANNOTATIONS[@]}") \
+                $(printf -- " --annotation %q" "${ANNOTATIONS_LIST[@]}") \
                 $(printf "$REPO@sha256:%s " *)
           done
 
