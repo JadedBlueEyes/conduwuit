@@ -260,7 +260,7 @@ jobs:
               docker buildx imagetools create \
                 $(for tag in "${TAGS_LIST[@]}"; do echo "--tag"; echo "$tag"; done) \
                 $(for annotation in "${ANNOTATIONS_LIST[@]}"; do echo "--annotation"; echo "$annotation"; done) \
-                $(for reference in *; do printf "$REPO@sha256:%s" $reference; done)
+                $(for reference in *; do printf "$REPO@sha256:%s\n" $reference; done)
           done
 
       - name: Inspect image
