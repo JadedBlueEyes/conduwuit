@@ -83,7 +83,7 @@ jobs:
   build-image:
     runs-on: ubuntu-latest
     # only build if we can push to at least one registry
-    if: (env.GHCR_ENABLED == 'true ') || ((vars.DOCKER_USERNAME != '') && (env.DOCKERHUB_TOKEN != '')) || (vars.GITLAB_USERNAME != '') && (env.GITLAB_TOKEN != '')
+    if: needs.define-variables.outputs.images != ''
     needs: define-variables
     # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
