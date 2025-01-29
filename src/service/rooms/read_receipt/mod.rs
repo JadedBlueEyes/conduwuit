@@ -2,9 +2,10 @@ mod data;
 
 use std::{collections::BTreeMap, sync::Arc};
 
-use conduwuit::{debug, err, warn, PduCount, PduId, RawPduId, Result};
+use conduwuit::{debug, err, result::LogErr, warn, PduCount, PduId, RawPduId, Result};
 use futures::{try_join, Stream, TryFutureExt};
 use ruma::{
+	api::appservice::event::push_events::v1::EphemeralData,
 	events::{
 		receipt::{ReceiptEvent, ReceiptEventContent, Receipts},
 		AnySyncEphemeralRoomEvent, SyncEphemeralRoomEvent,
@@ -14,7 +15,11 @@ use ruma::{
 };
 
 use self::data::{Data, ReceiptItem};
-use crate::{rooms, sending, Dep};
+use crate::{
+	rooms,
+	sending::{self, EduBuf},
+	Dep,
+};
 
 pub struct Service {
 	services: Services,
@@ -48,14 +53,24 @@ impl Service {
 		&self,
 		user_id: &UserId,
 		room_id: &RoomId,
-		event: &ReceiptEvent,
+		event: ReceiptEvent,
 	) {
-		self.db.readreceipt_update(user_id, room_id, event).await;
+		self.db.readreceipt_update(user_id, room_id, &event).await;
 		self.services
 			.sending
 			.flush_room(room_id)
 			.await
 			.expect("room flush failed");
+		// update appservices
+		let edu = EphemeralData::Receipt(event);
+		let mut buf = EduBuf::new();
+		serde_json::to_writer(&mut buf, &edu).expect("Serialized EphemeralData::Receipt");
+		_ = self
+			.services
+			.sending
+			.send_edu_appservice_room(room_id, buf)
+			.await
+			.log_err();
 	}
 
 	/// Gets the latest private read receipt from the user in the room

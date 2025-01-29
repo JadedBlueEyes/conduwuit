@@ -370,7 +370,7 @@ async fn handle_edu_receipt_room_user(
 			services
 				.rooms
 				.read_receipt
-				.readreceipt_update(user_id, room_id, &ReceiptEvent {
+				.readreceipt_update(user_id, room_id, ReceiptEvent {
 					content: ReceiptEventContent(content.into()),
 					room_id: room_id.to_owned(),
 				})

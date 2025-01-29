@@ -791,8 +791,8 @@ async fn load_joined_room(
 			let typings = services
 				.rooms
 				.typing
-				.typings_all(room_id, sender_user)
-				.await?;
+				.typings_user(room_id, sender_user)
+				.await;
 
 			Ok(vec![serde_json::from_str(&serde_json::to_string(&typings)?)?])
 		})
