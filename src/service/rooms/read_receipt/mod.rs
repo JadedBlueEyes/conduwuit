@@ -2,7 +2,9 @@ mod data;
 
 use std::{collections::BTreeMap, sync::Arc};
 
-use conduwuit::{debug, err, result::LogErr, warn, PduCount, PduId, RawPduId, Result};
+use conduwuit::{
+	debug, debug_info, err, result::LogErr, warn, PduCount, PduId, RawPduId, Result,
+};
 use futures::{try_join, Stream, TryFutureExt};
 use ruma::{
 	api::appservice::event::push_events::v1::EphemeralData,
@@ -61,6 +63,7 @@ impl Service {
 			.flush_room(room_id)
 			.await
 			.expect("room flush failed");
+		debug_info!("send read receipt to appservices");
 		// update appservices
 		let edu = EphemeralData::Receipt(event);
 		let mut buf = EduBuf::new();

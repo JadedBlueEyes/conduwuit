@@ -10,7 +10,7 @@ use std::{
 
 use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine as _};
 use conduwuit::{
-	debug, err, error,
+	debug, debug_info, err, error,
 	result::LogErr,
 	trace,
 	utils::{calculate_hash, continue_exponential_backoff_secs, stream::IterStream, ReadyExt},
@@ -668,6 +668,7 @@ impl Service {
 		id: String,
 		events: Vec<SendingEvent>,
 	) -> SendingResult {
+		debug_info!("Sending events to appservice {}", id);
 		let Some(appservice) = self.services.appservice.get_registration(&id).await else {
 			return Err((
 				Destination::Appservice(id.clone()),

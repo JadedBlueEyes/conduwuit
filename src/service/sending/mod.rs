@@ -12,7 +12,7 @@ use std::{
 
 use async_trait::async_trait;
 use conduwuit::{
-	debug, debug_warn, err, error,
+	debug, debug_info, debug_warn, err, error,
 	utils::{available_parallelism, math::usize_from_u64_truncated, ReadyExt, TryReadyExt},
 	warn, Result, Server,
 };
@@ -254,6 +254,7 @@ impl Service {
 					.appservice_in_room(room_id, appservice)
 					.await
 			{
+				debug_info!("send EDU to appservice {}", appservice.registration.id);
 				self.send_edu_appservice(&appservice.registration.id, serialized.clone())?;
 			}
 		}

@@ -264,6 +264,7 @@ impl Service {
 	}
 
 	async fn appservice_send(&self, room_id: &RoomId) -> Result<()> {
+		debug_info!("Sending typing event to appservice");
 		let edu = EphemeralData::Typing(EphemeralRoomEvent {
 			content: self.typings_content(room_id).await,
 			room_id: room_id.into(),
